@@ -1,0 +1,24 @@
+---
+- name: download the output of the torrent - created with run_torrent.yml
+  hosts: bittorrent_clients
+  vars:
+    torrent_output_source: "/torrent/torrent-output.txt"
+    torrent_downloaded_file: "/torrent/kali-linux-2020.4-installer-amd64.iso"
+    filename_log: "torrent_{{ ansible_host }}.txt"
+    remote_hash_file: "sha256_{{ ansible_host }}.txt"
+    destination_log: "../result/{{ filename_log }}"
+    destination_hash: "../result/{{ remote_hash_file }}"
+  tasks:
+    - name: fetch result
+      fetch:
+          src: "{{ torrent_output_source }}"
+          dest: "{{ destination_log }}"
+          flat: yes
+    - name: write remote hash to file
+      shell: |
+        sha256sum {{ torrent_downloaded_file }} >> {{ remote_hash_file }}
+    - name: fetch hash file
+      fetch:
+        src: "{{ remote_hash_file }}"
+        dest: "{{ destination_hash }}"
+        flat: yes

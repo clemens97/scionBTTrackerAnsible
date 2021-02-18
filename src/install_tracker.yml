@@ -1,0 +1,39 @@
+---
+- name: Setup Scion Bittorrent Tracker
+  hosts: bittorrent_trackers
+  vars:
+    systemd_unit: /lib/systemd/system/scionbttracker.service
+  tasks:
+    - name: add go repository
+      apt_repository:
+        repo: ppa:longsleep/golang-backports
+    - name: install go 1.14 and git
+      become: yes
+      apt:
+        pkg:
+          - golang-1.14-go
+          - git
+    - name: install tracker
+      become: yes
+      shell: |
+        $GO_LOC/go get github.com/netsys-lab/scionbttracker/scionbttracker@dev
+      environment:
+        GOROOT: /usr/lib/go-1.14
+        GOPATH: /go-1.14/
+        GO_LOC: /usr/lib/go-1.14/bin
+        GO111MODULE: 'on'
+    - name: copy systemd file
+      copy:
+        src: "./service/scionbttracker.service"
+        dest: "{{ systemd_unit }}"
+    - name: set tracker port
+      replace:
+        path: "{{ systemd_unit }}"
+        regexp: 'PORTPLACEHOLDER'
+        replace: "{{ hostvars[inventory_hostname]['vars'].tracker_port }}"
+    - name: enable and start tracker
+      systemd:
+        name: scionbttracker.service
+        enabled: true
+        state: started
+        masked: no

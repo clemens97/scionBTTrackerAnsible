@@ -1,0 +1,91 @@
+---
+# AS A - all participants
+as_a:
+  hosts:
+    client_a_1:
+    client_a_2:
+    client_a_3:
+  vars:
+    as_id: 19-ffaa:1:ebf
+    conf: ./setup1/as_a_conf
+    router_ip: 159.69.201.237
+
+# AS B - all participants
+as_b:
+  hosts:
+    client_b_1:
+    client_b_2:
+  vars:
+    as_id: 19-ffaa:1:ec8
+    conf: ./setup1/as_b_conf
+    router_ip: 159.69.202.72
+
+# AS C - all participants
+as_c:
+  hosts:
+    client_c_1:
+    client_c_2:
+  vars:
+    as_id: 19-ffaa:1:eca
+    conf: ./setup1/as_c_conf
+    router_ip: 159.69.202.84
+
+# all scion border routers
+scion_routers:
+  hosts:
+    client_a_1:
+      vars:
+        host_id: <secret>
+        host_secret: <secret>
+    client_b_1:
+      vars:
+        host_id: <secret>
+        host_secret: <secret>
+    client_c_1:
+      vars:
+        host_id: <secret>
+        host_secret: <secret>
+
+# all scion end hosts
+scion_end_hosts:
+  hosts:
+    client_a_2:
+    client_a_3:
+    client_b_2:
+    client_c_2:
+
+
+# all bittorrent trackers
+bittorrent_trackers:
+  hosts:
+    client_a_3:
+      ansible_host: 159.69.201.166
+      vars:
+        scion_url: 19-ffaa:1:ebf,[159.69.201.166]
+        tracker_port: 443
+
+
+# all bittorent clients
+bittorrent_clients:
+  hosts:
+    client_a_1:
+      ansible_host: 159.69.201.237
+    client_a_2:
+      ansible_host: 159.69.202.50
+    client_b_1:
+      ansible_host: 159.69.202.72
+    client_b_2:
+      ansible_host: 159.69.202.8
+    client_c_1:
+      ansible_host: 159.69.202.84
+
+# all initial bittorrent seeders
+bittorrent_seeder:
+  hosts:
+    client_b_2:
+
+# vars
+all:
+  vars:
+    ansible_user: root
+    ansible_port: 22

@@ -1,0 +1,21 @@
+---
+- name: Setup the torrent file and the file to share (if the host is a seeder)
+  hosts: bittorrent_clients
+  vars:
+    tracker_url: "https://{{ hostvars[groups['bittorrent_trackers'][0]]['vars'].scion_url }}:{{ hostvars[groups['bittorrent_trackers'][0]]['vars'].tracker_port }}"
+  tasks:
+    - name: add torrent file
+      copy:
+        src: "./sample_torrent/kali.torrent"
+        dest: "/torrent/"
+    - name: set tracker to torrent
+      replace:
+        path: "/torrent/kali.torrent"
+        regexp: 'PLACEHOLDER'
+        replace: "l{{ tracker_url | length }}:{{ tracker_url }}e" # bencode tracker url as singleton
+    - name: download original file for seeders
+      get_url:
+        url: http://old.kali.org/kali-images/kali-2020.4/kali-linux-2020.4-installer-amd64.iso
+        dest: "/torrent/kali-linux-2020.4-installer-amd64.iso"
+        timeout: 3600
+      when: "'bittorrent_seeder' in group_names"

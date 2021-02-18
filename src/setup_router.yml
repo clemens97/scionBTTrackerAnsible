@@ -1,0 +1,46 @@
+# https://docs.scionlab.org/content/install/pkg.html
+---
+- name: Setup Scion Border Router
+  hosts: scion_routers
+  tasks:
+    - name: update and upgrade 1
+      become: yes
+      apt:
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 86400 # one day
+    - name: install scionlab dependencies
+      become: yes
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+    - name: add scionlab package
+      apt_repository:
+        repo: deb [trusted=yes] https://packages.netsec.inf.ethz.ch/debian all main
+        filename: scionlab
+    - name: update and upgrade 2
+      become: yes
+      apt:
+        upgrade: 'no'
+        update_cache: yes
+        cache_valid_time: 86400 # one day
+    - name: install scionlab
+      become: yes
+      apt:
+        pkg:
+          - scionlab
+    - name: configure scion
+      become: true
+      shell: >
+        scionlab-config
+        --host-id={{ hostvars[inventory_hostname]['vars'].host_id }}
+        --host-secret={{ hostvars[inventory_hostname]['vars'].host_secret }}
+    - name: configure scion as
+      become: true
+      shell: sed -i "s/127\.0\.0\.1/{{ ansible_host }}/" /etc/scion/topology.json
+    - name: restart scionlab.target
+      become: true
+      systemd:
+        name: scionlab.target
+        state: restarted

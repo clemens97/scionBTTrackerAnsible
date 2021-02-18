@@ -1,0 +1,21 @@
+---
+- name: run the torrent - start exchanging the file
+  hosts: bittorrent_clients
+  vars:
+    as_id: "{{ hostvars[inventory_hostname].as_id }}"
+    local_scion_addr: "{{ as_id }},[{{ ansible_host }}]:8082"
+  tasks:
+    - name: start
+      become: true
+      shell: >
+        /bttorrent/cmd/torrent/torrent '/torrent/kali.torrent'
+        -scion
+        -localScionAddr={{ local_scion_addr }}
+        -stats
+        -seed
+        -scionOnly >> /torrent/torrent-output.txt
+      args:
+        chdir: /torrent
+      environment:
+        - SCION_CERT_KEY_FILE: /go-1.14/pkg/mod/github.com/marten-seemann/qtls@v0.10.0/testdata/example-key.pem
+        - SCION_CERT_FILE: /go-1.14/pkg/mod/github.com/marten-seemann/qtls@v0.10.0/testdata/example-cert.pem

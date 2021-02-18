@@ -1,0 +1,64 @@
+# https://docs.scionlab.org/content/config/setup_endhost.html
+---
+- name: Setup Scion End Host / Client
+  hosts: scion_end_hosts
+  vars:
+    conf_folder: "{{ hostvars[inventory_hostname].conf }}"
+    router_ip: "{{ hostvars[inventory_hostname].router_ip }}"
+  tasks:
+    - name: update and upgrade 1
+      become: yes
+      apt:
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 86400 # one day
+    - name: install scionlab dependencies
+      become: yes
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+    - name: add scionlab package
+      apt_repository:
+        repo: deb [trusted=yes] https://packages.netsec.inf.ethz.ch/debian all main
+        filename: scionlab
+    - name: update and upgrade 2
+      become: yes
+      apt:
+        upgrade: 'no'
+        update_cache: yes
+        cache_valid_time: 86400 # one day
+    - name: install scion
+      become: yes
+      apt:
+        pkg:
+          - scion-daemon
+          - scion-dispatcher
+    - name: configure end host - topology
+      become: true
+      copy:
+        src: "{{ conf_folder }}/etc/scion/topology.json"
+        dest: "/etc/scion/"
+    - name: configure scion as
+      become: true
+      shell: sed -i "s/127\.0\.0\.1/{{ router_ip }}/" /etc/scion/topology.json
+    - name: configure end host - crypto
+      copy:
+        src: "{{ conf_folder }}/etc/scion/crypto"
+        dest: "/etc/scion/"
+    - name: configure end host - certs
+      copy:
+        src: "{{ conf_folder }}/etc/scion/certs"
+        dest: "/etc/scion/"
+    - name: enable dispatcher
+      systemd:
+        name: scion-dispatcher.service
+        enabled: true
+        state: started
+        masked: no
+    - name: enable deamon
+      systemd:
+        name: scion-daemon.service
+        enabled: true
+        state: started
+        masked: no

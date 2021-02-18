@@ -1,0 +1,11 @@
+[Unit]
+Description=Scion Bittorent Tracker
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+ExecStart=/go-1.14/bin/scionbttracker -addr=:PORTPLACEHOLDER -debug=true
+
+[Install]
+WantedBy=multi-user.target

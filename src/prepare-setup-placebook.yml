@@ -1,0 +1,11 @@
+---
+- name: Setup Scion Border Routers
+  import_playbook: setup_router.yml
+- name: Setup Scion End Hosts
+  import_playbook: setup_clients.yml
+- name: Setup Bittorrent Clients
+  import_playbook: install_bt_client.yml
+- name: Setup Kali Bittorrent
+  import_playbook: install_torrent.yml
+- name: Setup Bittorrent Tracker
+  import_playbook: install_tracker.yml

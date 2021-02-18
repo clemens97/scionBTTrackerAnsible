@@ -1,0 +1,25 @@
+---
+- name: Setup Scion Bittorrent Client
+  hosts: bittorrent_clients
+  tasks:
+    - name: add go repository
+      apt_repository:
+        repo: ppa:longsleep/golang-backports
+    - name: install go 1.14 and git
+      become: yes
+      apt:
+        pkg:
+          - golang-1.14-go
+          - git
+          - build-essential
+    - name: install scion bt client
+      become: yes
+      shell: |
+        git clone -b dev_tracker https://github.com/martin31821/torrent.git /bttorrent/
+        cd /bttorrent/cmd/torrent/
+        $GO_LOC/go build
+      environment:
+        GOROOT: /usr/lib/go-1.14
+        GOPATH: /go-1.14/
+        GO_LOC: /usr/lib/go-1.14/bin
+        GO111MODULE: 'on'
